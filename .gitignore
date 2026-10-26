@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+.env
+*.pyc
+t.txt
+hello.txt
+demo.txt
+bad.exe
+cookies.txt
+users.db

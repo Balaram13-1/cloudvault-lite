@@ -1,0 +1,9 @@
+venv/
+.git/
+.env
+users.db
+__pycache__/
+*.pyc
+s3_test.py
+hello.txt
+cookies.txt

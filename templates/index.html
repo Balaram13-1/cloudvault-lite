@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your files - CloudVault Lite</title>
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#7FD8D2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><rect x="9" y="10.5" width="6" height="5" rx="1"/><path d="M10.5 10.5V9a1.5 1.5 0 0 1 3 0v1.5"/></svg>
+    <span>CloudVault Lite</span>
+  </div>
+  <div class="user-area">
+    <span>Signed in as <strong>{{ user }}</strong></span>
+    <button id="logout-btn" class="btn btn-ghost" type="button">Log out</button>
+  </div>
+</header>
+
+<main class="container">
+  <div class="page-head">
+    <h1>Your files</h1>
+    <p class="muted">Private storage backed by your own S3 bucket.</p>
+  </div>
+
+  <ul class="badges" aria-label="Bucket security settings">
+    <li>S3 bucket, {{ region }}</li>
+    <li>Versioning on</li>
+    <li>SSE-S3 encryption</li>
+    <li>Public access blocked</li>
+  </ul>
+
+  <section class="card" aria-labelledby="upload-title">
+    <h2 id="upload-title" class="sr-only">Upload a file</h2>
+    <div id="dropzone" class="dropzone">
+      <div class="dropzone-text">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0B7A75" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></svg>
+        <div>
+          <p class="dropzone-title">Drag a file here, or choose one to upload</p>
+          <p class="muted small">PDF, PNG, JPG, TXT or DOCX, up to 10 MB</p>
+        </div>
+      </div>
+      <button id="choose-btn" class="btn btn-primary" type="button">Choose file</button>
+      <input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.txt,.docx" hidden>
+    </div>
+    <progress id="progress" class="progress" max="100" value="0" hidden aria-label="Upload progress"></progress>
+  </section>
+
+  <p id="status" class="status" role="status" aria-live="polite"></p>
+
+  <section class="card card-table" aria-labelledby="files-title">
+    <div class="card-head">
+      <h2 id="files-title">Files</h2>
+      <span id="file-count" class="muted small"></span>
+    </div>
+    <div class="table-scroll">
+      <table class="files">
+        <thead>
+          <tr>
+            <th scope="col" class="col-name">Name</th>
+            <th scope="col" class="col-size">Size</th>
+            <th scope="col" class="col-date">Last modified</th>
+            <th scope="col" class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="file-rows"></tbody>
+      </table>
+    </div>
+    <p id="empty-state" class="empty" hidden>No files yet. Upload your first file above.</p>
+  </section>
+
+  <p class="footnote">Download links are presigned and expire after 60 seconds. Deleted files stay recoverable through S3 versioning.</p>
+</main>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
