@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import sqlite3
@@ -25,6 +26,7 @@ app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB upload limit
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-change-me")
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.logger.setLevel(logging.INFO)
 
 BUCKET = os.environ.get("BUCKET_NAME", "cloud-vaultbucket")
 REGION = os.environ.get("AWS_REGION", "ap-south-1")
@@ -159,14 +161,17 @@ def login():
     password = data.get("password") or ""
     user = find_user(username)
     if not user or not check_password_hash(user["password_hash"], password):
+        app.logger.warning("login_failed user=%r ip=%s", username[:64], request.remote_addr)
         return jsonify({"error": "Invalid username or password"}), 401
     session.clear()
     session["user"] = user["username"]
+    app.logger.info("login_ok user=%s ip=%s", user["username"], request.remote_addr)
     return jsonify({"message": "Logged in", "user": user["username"]})
 
 
 @app.route("/api/logout", methods=["POST"])
 def logout():
+    app.logger.info("logout user=%s", session.get("user"))
     session.clear()
     return jsonify({"message": "Logged out"})
 
@@ -219,6 +224,7 @@ def upload():
         )
     except ClientError as e:
         return jsonify({"error": e.response["Error"]["Code"]}), 500
+    app.logger.info("upload user=%s file=%r", session["user"], name)
     return jsonify({"message": "Uploaded", "name": name}), 201
 
 
@@ -241,6 +247,7 @@ def download(name):
         },
         ExpiresIn=60,
     )
+    app.logger.info("download_link user=%s file=%r", session["user"], name)
     return jsonify({"url": url, "expires_in": 60})
 
 
@@ -251,6 +258,7 @@ def delete(name):
         s3.delete_object(Bucket=BUCKET, Key=user_prefix() + name)
     except ClientError as e:
         return jsonify({"error": e.response["Error"]["Code"]}), 500
+    app.logger.info("delete user=%s file=%r", session["user"], name)
     return jsonify({"message": "Deleted", "name": name})
 
 

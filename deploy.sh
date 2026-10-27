@@ -9,7 +9,13 @@ docker build -t cloudvault-lite .
 
 docker rm -f cloudvault 2>/dev/null || true
 docker run -d --name cloudvault --restart unless-stopped -p 80:8000 \
-  --env-file .env -v cloudvault-data:/data cloudvault-lite
+  --env-file .env -v cloudvault-data:/data \
+  --log-driver awslogs \
+  --log-opt awslogs-region=ap-south-1 \
+  --log-opt awslogs-group=/cloudvault-lite/app \
+  --log-opt awslogs-stream=cloudvault \
+  --log-opt awslogs-create-group=true \
+  cloudvault-lite
 
 # Remove layers left over from old builds (the disk is small)
 docker image prune -f > /dev/null

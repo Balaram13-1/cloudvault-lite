@@ -166,3 +166,13 @@ def test_security_headers_and_no_store(client):
     assert res.headers["X-Content-Type-Options"] == "nosniff"
     assert res.headers["X-Frame-Options"] == "DENY"
     assert res.headers["Cache-Control"] == "no-store"
+
+
+def test_failed_login_is_logged_without_the_password(client, caplog):
+    with caplog.at_level("INFO"):
+        login(client, password="wrong-password")
+        login(client)
+    assert "login_failed" in caplog.text
+    assert "login_ok" in caplog.text
+    assert "wrong-password" not in caplog.text
+    assert PASSWORD not in caplog.text
