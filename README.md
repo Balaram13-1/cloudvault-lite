@@ -4,7 +4,7 @@ A small, secure cloud file storage app. Users log in, upload files to a private 
 
 Built as the Cloud Computing major project for Quillance Infotech.
 
-**Live demo:** `http://<EC2-PUBLIC-IP>/` (replace with the current address of the instance)
+**Live demo:** `http://13.233.158.122` 
 
 ![Architecture](docs/architecture.png)
 
