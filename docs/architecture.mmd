@@ -1,0 +1,37 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Helvetica, Arial, sans-serif", "fontSize": "17px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#0F1B2D", "primaryTextColor": "#0F1B2D", "lineColor": "#0F1B2D", "edgeLabelBackground": "#FFFFFF"}, "flowchart": {"curve": "basis", "nodeSpacing": 55, "rankSpacing": 70}}}%%
+flowchart TB
+    user(["<b>User</b><br/>web browser"])
+
+    subgraph AWS["AWS cloud, region ap-south-1"]
+        subgraph EC2["EC2 instance (Ubuntu)"]
+            app["<b>Docker container</b><br/>Flask + Gunicorn<br/>serves HTML, CSS, JS and API"]
+        end
+        role["<b>IAM role</b> for EC2<br/>least privilege,<br/>no stored keys"]
+        s3[("<b>S3 bucket</b><br/>private, versioned,<br/>SSE-S3 encryption")]
+        cw["<b>CloudWatch Logs</b><br/>/cloudvault-lite/app"]
+        ssm["<b>Systems Manager</b><br/>Run Command"]
+    end
+
+    subgraph GH["GitHub"]
+        repo["<b>Repository</b><br/>main branch"] --> actions["<b>GitHub Actions</b><br/>test, build, deploy"]
+    end
+
+    user -- "1. HTTP: login, upload,<br/>list, delete" --> app
+    app -- "2. boto3 calls" --> s3
+    s3 -. "3. presigned URL, 60 s:<br/>file downloads directly" .-> user
+    role -. "temporary credentials" .-> app
+    app -- "4. container logs" --> cw
+    actions -- "5. OIDC token,<br/>no stored keys" --> ssm
+    ssm -- "6. git pull and deploy.sh" --> app
+
+    classDef user fill:#0F1B2D,stroke:#0F1B2D,color:#FFFFFF
+    classDef compute fill:#E6F4F3,stroke:#0B7A75,color:#0F1B2D
+    classDef store fill:#FFFFFF,stroke:#0B7A75,color:#0F1B2D,stroke-width:2px
+    classDef service fill:#F4F6F8,stroke:#0F1B2D,color:#0F1B2D
+    class user user
+    class app compute
+    class s3 store
+    class role,cw,ssm,repo,actions service
+    style AWS fill:#F9FAFB,stroke:#0F1B2D,stroke-width:2px
+    style EC2 fill:#FFFFFF,stroke:#0B7A75,stroke-dasharray: 5 4
+    style GH fill:#F9FAFB,stroke:#0F1B2D,stroke-width:2px
